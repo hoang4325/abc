@@ -55,7 +55,6 @@ const Notifications = ({ className }: { className?: string }) => {
             )}
           </div>
 
-          {/* List */}
           <SimpleBar className="max-h-80 mt-3">
             <div className="flex flex-col">
               {notifications.map((item, index) => (
@@ -94,9 +93,8 @@ const Notifications = ({ className }: { className?: string }) => {
             </div>
           </SimpleBar>
 
-          {/* Footer Button */}
           <div className="pt-5 px-6">
-            <Button className="w-full" render={<Link href="#" />}>
+            <Button className="w-full" nativeButton={false} render={<Link href="#" />}>
               See All Notifications
             </Button>
           </div>
