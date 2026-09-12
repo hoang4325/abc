@@ -9,6 +9,7 @@ import { OfflineBanner } from "@/app/components/shared/offline-banner";
 
 
 import { ToastProvider } from "@/components/ui/toast-simple";
+import { AuthProvider } from "@/app/context/auth-context";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -67,7 +68,9 @@ export default function RootLayout({
           enableSystem={false}
         >
           <ToastProvider>
-            {children}
+            <AuthProvider>
+              {children}
+            </AuthProvider>
             <OfflineBanner />
           </ToastProvider>
         </ThemeProvider>

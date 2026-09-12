@@ -14,16 +14,45 @@ export class ApiError extends Error {
 
 interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined | null>;
+  skipAuthRefresh?: boolean;
 }
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
 
+let refreshPromise: Promise<boolean> | null = null;
+
+async function refreshAuth(): Promise<boolean> {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const cleanBase = BASE_URL.replace(/\/+$/, "");
+      const res = await fetch(`${cleanBase}/auth/refresh`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      return res.ok;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
+}
+
 async function request<T>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<T> {
-  const { params, headers, ...restOptions } = options;
+  const { params, headers, skipAuthRefresh, ...restOptions } = options;
 
   const cleanBase = BASE_URL.replace(/\/+$/, "");
   const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
@@ -45,9 +74,26 @@ async function request<T>(
   }
 
   const response = await fetch(fullUrl.toString(), {
+    credentials: "include",
     ...restOptions,
     headers: reqHeaders,
   });
+
+  if (
+    response.status === 401 &&
+    !skipAuthRefresh &&
+    !endpoint.includes("/auth/login") &&
+    !endpoint.includes("/auth/register") &&
+    !endpoint.includes("/auth/refresh")
+  ) {
+    const refreshed = await refreshAuth();
+    if (refreshed) {
+      return request<T>(endpoint, {
+        ...options,
+        skipAuthRefresh: true,
+      });
+    }
+  }
 
   if (!response.ok) {
     let errorMessage = `HTTP Error ${response.status}: ${response.statusText}`;
