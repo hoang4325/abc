@@ -1,0 +1,80 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sharedeal_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-sharedeal_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sharedeal_password}
+      POSTGRES_DB: ${POSTGRES_DB:-sharedeal_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-sharedeal_user} -d ${POSTGRES_DB:-sharedeal_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sharedeal_network
+
+  be:
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: sharedeal_backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-3001}:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-sharedeal_user}:${POSTGRES_PASSWORD:-sharedeal_password}@postgres:5432/${POSTGRES_DB:-sharedeal_db}?schema=public
+      UPLOAD_DIR: ./uploads
+      MAX_FILE_SIZE_BYTES: 5242880
+      APP_BASE_URL: http://localhost:${BACKEND_PORT:-3001}
+      FRONTEND_URL: http://localhost:${FRONTEND_PORT:-3000}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:-sharedeal-access-secret-dev-change-in-production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-sharedeal-refresh-secret-dev-change-in-production}
+      JWT_ACCESS_EXPIRES_IN: ${JWT_ACCESS_EXPIRES_IN:-15m}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-1d}
+      JWT_REFRESH_REMEMBER_EXPIRES_IN: ${JWT_REFRESH_REMEMBER_EXPIRES_IN:-30d}
+      COOKIE_SECURE: "false"
+      DEV_ADMIN_EMAIL: ${DEV_ADMIN_EMAIL:-admin@sharedeal.vn}
+      DEV_ADMIN_PASSWORD: ${DEV_ADMIN_PASSWORD:-Admin@123456}
+      SEED_DB: ${SEED_DB:-true}
+    volumes:
+      - be_uploads:/app/uploads
+    networks:
+      - sharedeal_network
+
+  fe:
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:${BACKEND_PORT:-3001}/api/v1
+    container_name: sharedeal_frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - be
+    environment:
+      PORT: 3000
+      HOSTNAME: "0.0.0.0"
+      NEXT_PUBLIC_API_URL: http://localhost:${BACKEND_PORT:-3001}/api/v1
+    networks:
+      - sharedeal_network
+
+volumes:
+  postgres_data:
+  be_uploads:
+
+networks:
+  sharedeal_network:
+    driver: bridge
