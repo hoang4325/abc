@@ -35,7 +35,7 @@ function LoginForm() {
     try {
       await login({ email, password, rememberMe });
       showToast("Đăng nhập thành công!", "success");
-      router.push(redirectUrl);
+      window.location.href = redirectUrl;
     } catch (err: any) {
       const msg = err?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
       setError(msg);

@@ -36,8 +36,12 @@ export class AuthController {
     accessExpiresIn: number,
     refreshExpiresIn: number,
   ) {
+    const cookieSecureConfig = this.configService.get<string>("COOKIE_SECURE");
     const isProduction = this.configService.get<string>("NODE_ENV") === "production";
-    const secure = this.configService.get<string>("COOKIE_SECURE") === "true" || isProduction;
+    const secure =
+      cookieSecureConfig !== undefined
+        ? cookieSecureConfig === "true"
+        : isProduction;
 
     res.cookie("access_token", accessToken, {
       httpOnly: true,

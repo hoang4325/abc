@@ -38,7 +38,7 @@ export default function BoxedRegister() {
     try {
       await register({ name, email, password });
       showToast("Tạo tài khoản thành công!", "success");
-      router.push("/");
+      window.location.href = "/";
     } catch (err: any) {
       const msg = err?.message || "Đăng ký thất bại. Vui lòng thử lại.";
       setError(msg);
