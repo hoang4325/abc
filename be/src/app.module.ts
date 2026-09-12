@@ -9,7 +9,6 @@ import { ArticlesModule } from "./modules/articles/articles.module.js";
 import { CommentsModule } from "./modules/comments/comments.module.js";
 import { NotesModule } from "./modules/notes/notes.module.js";
 import { UsersModule } from "./modules/users/users.module.js";
-import { EmailModule } from "./modules/email/email.module.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
@@ -27,7 +26,6 @@ import { AppService } from "./app.service.js";
     ]),
     PrismaModule,
     UsersModule,
-    EmailModule,
     AuthModule,
     MediaModule,
     CategoriesModule,

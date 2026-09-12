@@ -10,7 +10,6 @@ import argon2 from "argon2";
 import crypto from "crypto";
 import { PrismaService } from "../../database/prisma.service.js";
 import { UsersService } from "../users/users.service.js";
-import { EmailService } from "../email/email.service.js";
 import { RegisterDto } from "./dto/register.dto.js";
 import { LoginDto } from "./dto/login.dto.js";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto.js";
@@ -40,7 +39,6 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly usersService: UsersService,
-    private readonly emailService: EmailService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
@@ -293,7 +291,7 @@ export class AuthService {
 
   async forgotPassword(
     dto: ForgotPasswordDto,
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<{ success: boolean; message: string; resetToken?: string; resetUrl?: string }> {
     const normalizedEmail = dto.email.toLowerCase().trim();
     const user = await this.usersService.findByEmail(normalizedEmail);
 
@@ -322,12 +320,17 @@ export class AuthService {
         "http://localhost:3000";
       const resetUrl = `${frontendUrl}/auth/auth2/reset-password?token=${rawToken}`;
 
-      await this.emailService.sendPasswordResetEmail(user.email, resetUrl);
+      return {
+        success: true,
+        message: "Yêu cầu đặt lại mật khẩu đã được tạo thành công.",
+        resetToken: rawToken,
+        resetUrl,
+      };
     }
 
     return {
       success: true,
-      message: "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.",
+      message: "Nếu email tồn tại trong hệ thống, bạn có thể đặt lại mật khẩu.",
     };
   }
 

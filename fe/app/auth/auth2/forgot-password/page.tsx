@@ -15,6 +15,7 @@ export default function BoxedForgotpwd() {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [resetUrl, setResetUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useToast();
 
@@ -22,11 +23,15 @@ export default function BoxedForgotpwd() {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
+    setResetUrl(null);
     setIsLoading(true);
 
     try {
       const res = await authService.forgotPassword({ email });
       setSuccessMessage(res.message);
+      if (res.resetUrl) {
+        setResetUrl(res.resetUrl);
+      }
       showToast(res.message, "success");
     } catch (err: any) {
       const msg = err?.message || "Có lỗi xảy ra. Vui lòng thử lại sau.";
@@ -44,13 +49,23 @@ export default function BoxedForgotpwd() {
           <FullLogo />
         </div>
         <p className="text-sm font-normal text-muted-foreground my-4 text-center">
-          Nhập địa chỉ email liên kết với tài khoản của bạn để nhận liên kết đặt lại mật khẩu.
+          Nhập địa chỉ email tài khoản của bạn để tạo liên kết đặt lại mật khẩu.
         </p>
 
         {successMessage && (
-          <div className="mb-4 flex items-center gap-2 rounded-md bg-green-500/15 p-3 text-sm text-green-600 dark:text-green-400">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-            <span>{successMessage}</span>
+          <div className="mb-4 space-y-3">
+            <div className="flex items-center gap-2 rounded-md bg-green-500/15 p-3 text-sm text-green-600 dark:text-green-400">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span>{successMessage}</span>
+            </div>
+            {resetUrl && (
+              <Link
+                href={resetUrl}
+                className="flex items-center justify-center w-full h-9 px-4 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Chuyển đến trang Đặt lại mật khẩu
+              </Link>
+            )}
           </div>
         )}
 

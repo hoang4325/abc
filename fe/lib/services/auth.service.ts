@@ -36,14 +36,21 @@ export const authService = {
 
   async forgotPassword(
     input: ForgotPasswordInput,
-  ): Promise<{ success: boolean; message: string }> {
-    const res = await apiClient.post<{ success: boolean; data?: { success: boolean; message: string }; message?: string }>(
-      "/auth/forgot-password",
-      input,
-    );
+  ): Promise<{ success: boolean; message: string; resetUrl?: string; resetToken?: string }> {
+    const res = await apiClient.post<{
+      success: boolean;
+      data?: { success: boolean; message: string; resetUrl?: string; resetToken?: string };
+      message?: string;
+      resetUrl?: string;
+      resetToken?: string;
+    }>("/auth/forgot-password", input);
+
+    const data = res.data || res;
     return {
       success: res.success,
-      message: (res.data?.message || res.message) ?? "Đã gửi hướng dẫn đặt lại mật khẩu",
+      message: data.message ?? "Đã tạo yêu cầu đặt lại mật khẩu",
+      resetUrl: data.resetUrl,
+      resetToken: data.resetToken,
     };
   },
 

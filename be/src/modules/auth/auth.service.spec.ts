@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { AuthService } from "./auth.service.js";
 import { UsersService } from "../users/users.service.js";
-import { EmailService } from "../email/email.service.js";
 import { PrismaService } from "../../database/prisma.service.js";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
@@ -19,7 +18,6 @@ describe("AuthService", () => {
   let service: AuthService;
   let mockPrisma: any;
   let mockUsersService: any;
-  let mockEmailService: any;
   let mockJwtService: any;
   let mockConfigService: any;
 
@@ -78,10 +76,6 @@ describe("AuthService", () => {
       updateLastLogin: vi.fn().mockResolvedValue(undefined),
     };
 
-    mockEmailService = {
-      sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
-    };
-
     mockJwtService = {
       signAsync: vi.fn().mockResolvedValue("mocked.jwt.token"),
       verifyAsync: vi.fn(),
@@ -99,7 +93,6 @@ describe("AuthService", () => {
     service = new AuthService(
       mockPrisma as unknown as PrismaService,
       mockUsersService as unknown as UsersService,
-      mockEmailService as unknown as EmailService,
       mockJwtService as unknown as JwtService,
       mockConfigService as unknown as ConfigService,
     );
@@ -358,26 +351,27 @@ describe("AuthService", () => {
   });
 
   describe("forgotPassword", () => {
-    it("should generate token and send email if user exists", async () => {
+    it("should generate reset token and url if user exists", async () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
 
       const res = await service.forgotPassword({ email: "test@example.com" });
 
       expect(res.success).toBe(true);
+      expect(res.resetToken).toBeDefined();
+      expect(res.resetUrl).toContain("reset-password?token=");
       expect(mockPrisma.passwordResetToken.deleteMany).toHaveBeenCalledWith({
         where: { userId: mockUser.id },
       });
       expect(mockPrisma.passwordResetToken.create).toHaveBeenCalled();
-      expect(mockEmailService.sendPasswordResetEmail).toHaveBeenCalled();
     });
 
-    it("should return success without error if user does not exist", async () => {
+    it("should return success without reset details if user does not exist", async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
 
       const res = await service.forgotPassword({ email: "notfound@example.com" });
 
       expect(res.success).toBe(true);
-      expect(mockEmailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+      expect(res.resetToken).toBeUndefined();
     });
   });
 
