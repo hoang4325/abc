@@ -18,6 +18,22 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 
+const STATUS_LABELS: Record<string, string> = {
+  ALL: "Tất cả trạng thái",
+  PUBLISHED: "Đã xuất bản",
+  SCHEDULED: "Đã lên lịch",
+  DRAFT: "Bản nháp",
+  ARCHIVED: "Đã lưu trữ",
+};
+
+const SORT_LABELS: Record<string, string> = {
+  createdAt_desc: "Mới nhất trước",
+  createdAt_asc: "Cũ nhất trước",
+  publishedAt_desc: "Ngày xuất bản",
+  title_asc: "Tiêu đề A-Z",
+  title_desc: "Tiêu đề Z-A",
+};
+
 export default function BlogListing() {
   const [articles, setArticles] = useState<ArticleListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -31,9 +47,9 @@ export default function BlogListing() {
   const [page, setPage] = useState<number>(1);
   const [searchInput, setSearchInput] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
-  const [status, setStatus] = useState<string>("ALL");
-  const [categoryId, setCategoryId] = useState<string>("ALL");
-  const [sortOrder, setSortOrder] = useState<string>("createdAt_desc");
+  const [status, setStatus] = useState<string>("");
+  const [categoryId, setCategoryId] = useState<string>("");
+  const [sortOrder, setSortOrder] = useState<string>("");
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -63,17 +79,22 @@ export default function BlogListing() {
     setError(null);
 
     try {
-      const [sortField, orderDirection] = sortOrder.split("_") as [
-        "createdAt" | "updatedAt" | "publishedAt" | "title",
-        "asc" | "desc"
-      ];
+      const [sortField, orderDirection] =
+        sortOrder && sortOrder.includes("_")
+          ? (sortOrder.split("_") as [
+              "createdAt" | "updatedAt" | "publishedAt" | "title",
+              "asc" | "desc"
+            ])
+          : (["createdAt", "desc"] as const);
 
       const result = await articlesService.getArticles({
         page,
         limit: 9,
         search: debouncedSearch || undefined,
-        status: status !== "ALL" ? (status as ArticleStatus) : undefined,
-        categoryId: categoryId !== "ALL" ? categoryId : undefined,
+        status:
+          status && status !== "ALL" ? (status as ArticleStatus) : undefined,
+        categoryId:
+          categoryId && categoryId !== "ALL" ? categoryId : undefined,
         sort: sortField,
         order: orderDirection,
       });
@@ -98,9 +119,9 @@ export default function BlogListing() {
   const handleResetFilters = () => {
     setSearchInput("");
     setDebouncedSearch("");
-    setStatus("ALL");
-    setCategoryId("ALL");
-    setSortOrder("createdAt_desc");
+    setStatus("");
+    setCategoryId("");
+    setSortOrder("");
     setPage(1);
   };
 
@@ -121,14 +142,14 @@ export default function BlogListing() {
           <Select
             value={status}
             onValueChange={(val) => {
-              if (val) {
-                setStatus(val);
-                setPage(1);
-              }
+              setStatus(val || "");
+              setPage(1);
             }}
           >
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Trạng thái" />
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Trạng thái">
+                {(val: string | null) => (val && STATUS_LABELS[val]) || "Trạng thái"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
@@ -142,14 +163,19 @@ export default function BlogListing() {
           <Select
             value={categoryId}
             onValueChange={(val) => {
-              if (val) {
-                setCategoryId(val);
-                setPage(1);
-              }
+              setCategoryId(val || "");
+              setPage(1);
             }}
           >
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Chuyên mục" />
+            <SelectTrigger className="w-[170px]">
+              <SelectValue placeholder="Chuyên mục">
+                {(val: string | null) =>
+                  val === "ALL"
+                    ? "Tất cả chuyên mục"
+                    : (val && categories.find((c) => c.id === val)?.name) ||
+                      "Chuyên mục"
+                }
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="ALL">Tất cả chuyên mục</SelectItem>
@@ -164,14 +190,14 @@ export default function BlogListing() {
           <Select
             value={sortOrder}
             onValueChange={(val) => {
-              if (val) {
-                setSortOrder(val);
-                setPage(1);
-              }
+              setSortOrder(val || "");
+              setPage(1);
             }}
           >
             <SelectTrigger className="w-[170px]">
-              <SelectValue placeholder="Sắp xếp" />
+              <SelectValue placeholder="Sắp xếp">
+                {(val: string | null) => (val && SORT_LABELS[val]) || "Sắp xếp"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="createdAt_desc">Mới nhất trước</SelectItem>
