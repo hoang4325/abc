@@ -5,6 +5,7 @@ import { MediaModule } from "./modules/media/media.module.js";
 import { CategoriesModule } from "./modules/categories/categories.module.js";
 import { TagsModule } from "./modules/tags/tags.module.js";
 import { ArticlesModule } from "./modules/articles/articles.module.js";
+import { CommentsModule } from "./modules/comments/comments.module.js";
 import { AppController } from "./app.controller.js";
 import { AppService } from "./app.service.js";
 
@@ -18,6 +19,7 @@ import { AppService } from "./app.service.js";
     CategoriesModule,
     TagsModule,
     ArticlesModule,
+    CommentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

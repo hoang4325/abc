@@ -21,6 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { articlesService } from "@/lib/services/articles.service";
 import { Article, ArticleStatus } from "@/lib/types/article";
+import BlogCommentsSection from "./blog-comments-section";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -319,6 +320,8 @@ export default function BlogDetailData({ articleId }: BlogDetailDataProps) {
           </div>
         </CardContent>
       </Card>
+
+      <BlogCommentsSection articleId={article.id} />
     </div>
   );
 }
