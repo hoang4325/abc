@@ -113,7 +113,7 @@ export default function BlogListing() {
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
             placeholder="Tìm kiếm theo tiêu đề, nội dung, thẻ..."
-            className="pl-9"
+            className="pl-10! ps-10!"
           />
         </div>
 

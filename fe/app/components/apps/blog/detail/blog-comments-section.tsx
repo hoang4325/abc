@@ -211,7 +211,7 @@ export default function BlogCommentsSection({
                 placeholder="Tên của bạn *"
                 value={authorName}
                 onChange={(e) => setAuthorName(e.target.value)}
-                className="pl-9"
+                className="pl-10! ps-10!"
                 maxLength={100}
                 required
               />
