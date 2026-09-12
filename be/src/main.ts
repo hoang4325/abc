@@ -41,6 +41,7 @@ async function bootstrap() {
     .addTag("Categories")
     .addTag("Tags")
     .addTag("Media")
+    .addTag("Notes")
     .addBearerAuth()
     .build();
 

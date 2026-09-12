@@ -1,4 +1,4 @@
-import { PrismaClient, ArticleStatus } from "@prisma/client";
+import { PrismaClient, ArticleStatus, NoteColor } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -205,6 +205,45 @@ async function main() {
           },
         });
       }
+    }
+  }
+
+  const notesData = [
+    {
+      title: "Lên nội dung review sản phẩm Anessa tuần này",
+      content: "Lên nội dung review sản phẩm Anessa tuần này",
+      color: NoteColor.YELLOW,
+    },
+    {
+      title: "Kiểm tra lại caption Facebook trước khi đăng",
+      content: "Kiểm tra lại caption Facebook trước khi đăng",
+      color: NoteColor.RED,
+    },
+    {
+      title: "Chuẩn bị content chiến dịch tháng 9",
+      content: "Chuẩn bị content chiến dịch tháng 9",
+      color: NoteColor.TEAL,
+    },
+    {
+      title: "Tổng hợp hình ảnh sản phẩm mới",
+      content: "Tổng hợp hình ảnh sản phẩm mới",
+      color: NoteColor.BLUE,
+    },
+    {
+      title: "Trao đổi với Brand về nội dung",
+      content: "Trao đổi với Brand về nội dung",
+      color: NoteColor.BLACK,
+    },
+  ];
+
+  for (const item of notesData) {
+    const existing = await prisma.note.findFirst({
+      where: { content: item.content, deletedAt: null },
+    });
+    if (!existing) {
+      await prisma.note.create({
+        data: item,
+      });
     }
   }
 }
